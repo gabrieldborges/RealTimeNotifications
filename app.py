@@ -57,4 +57,17 @@ def get_payment_pix_page(payment_id):
     payment = Payment.query.get(payment_id)
     
     return render_template('payment.html', 
-                           payment_i
+                           payment_id=payment.id, 
+                           value = payment.value ,
+                           host = "http://127.0.0.1:5000", 
+                           qr_code = payment.qr_code)
+
+
+
+# Websockets
+@socketio.on('connect')
+def handshake_connect():
+    print("Client connected")
+
+if __name__ == "__main__":
+    socketio.run(app, debug=True)
