@@ -49,7 +49,32 @@ def get_qrcode_img(file_name):
     
 @app.route('/payments/pix/confirmation',methods=['POST'])
 def confirm_payment_pix():
+    data = request.json
+
+
+
+    if "bank_payment_id" not in data and "value" not in data:
+        return jsonify({"message": "Invalid payment data45."}), 400
+
+    payment = Payment.query.filter_by(bank_payment_id = data.get("bank_payment_id")).first()
+
+    if not payment or payment.paid == True:
+        return jsonify({"message": "Payment registration not found."}), 404
+
+
+    if data.get('value') != payment.value:
+        return jsonify({"message": "Invalid payment data."}), 400
+
+    payment.paid = True
+    db.session.commit()
+
+
     return jsonify({"message": "Payment has been confirmed."})
+
+
+
+
+
 
 
 @app.route('/payments/pix/<int:payment_id>',methods=['GET'])
