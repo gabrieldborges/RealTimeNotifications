@@ -67,6 +67,7 @@ def confirm_payment_pix():
 
     payment.paid = True
     db.session.commit()
+    socketio.emit(f"payment-confirmed-{payment.id}")
 
 
     return jsonify({"message": "Payment has been confirmed."})
@@ -81,6 +82,20 @@ def confirm_payment_pix():
 def get_payment_pix_page(payment_id):
     payment = Payment.query.get(payment_id)
     
+    if not payment:
+        return render_template('404.html')
+                        
+
+
+    if payment.paid:
+        return render_template('confirmed_payment.html', 
+                           payment_id=payment.id, 
+                           value = payment.value ,
+                           host = "http://127.0.0.1:5000", 
+                           qr_code = payment.qr_code)
+
+
+
     return render_template('payment.html', 
                            payment_id=payment.id, 
                            value = payment.value ,
@@ -93,6 +108,10 @@ def get_payment_pix_page(payment_id):
 @socketio.on('connect')
 def handshake_connect():
     print("Client connected")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("Client has been disconnected")
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
